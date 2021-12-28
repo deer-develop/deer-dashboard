@@ -5,12 +5,20 @@ import { curveMonotoneX } from '@visx/curve'
 import { GridRows, GridColumns } from '@visx/grid'
 import { scaleBand, scaleLinear, scaleOrdinal } from '@visx/scale'
 import { AxisLeft, AxisBottom } from '@visx/axis';
+import _ from 'lodash';
 
 export const background = '#ffffff'
 export const gridColor = '#CBD4E1'
 export const labelColor = '#94A3B8'
-export const accentColor1 = '#4032DC'
-export const accentColor2 = '#c4c4c4'
+export const color0 = '#EDECFF'
+export const color1 = '#CFCBFF'
+export const color2 = '#B0A9FF'
+export const color3 = '#958BFF'
+export const color4 = '#7A6DFF'
+export const color5 = '#5D50EE'
+export const color6 = '#4032DC'
+export const color7 = '#2719C4'
+export const color8 = '#0E00AB'
 
 // util
 const formatXAxis = (d) => `${d}주차`;
@@ -29,7 +37,7 @@ const SpaghettiGraph = ({
   style,
   marginLeft,
   marginTop,
-  margin = { top: marginTop, right: 2, bottom: 16, left: marginLeft },
+  margin = { top: marginTop, right: 10, bottom: 16, left: marginLeft },
   rowNumTicks,
   columnNumTicks 
 }) => {
@@ -40,16 +48,17 @@ const SpaghettiGraph = ({
   const innerHeight = height - margin.top - margin.bottom
 
   // scales
-  const weekScale = scaleBand({
-    domain: data.map(getWeek),
-    range: [0, innerWidth],
+  const weekScale = scaleOrdinal({
+    domain: _.range(9),
+    range: _.range(9).map(x => x * innerWidth / 8) 
   })
   const percentageScale = scaleLinear({
-    domain: data.map(getPercentage),
+    domain: [100, 0],
     range: [0, innerHeight]
   });
   const color = scaleOrdinal({
-    
+    domain: _.range(9),
+    range: [color8, color7, color6, color5, color4, color3, color2, color1, color0]
   })
 
   return (
@@ -104,14 +113,16 @@ const SpaghettiGraph = ({
             pointerEvents="none"
             numTicks={rowNumTicks}
           />
-          <LinePath
-            data={data} 
+          {button.map(button => (
+            <LinePath
+            data={data[button].bins} 
             x={(d) => weekScale(getWeek(d)) ?? 0}
             y={(d) => percentageScale(getPercentage(d)) ?? 0}
             strokeWidth={1}
-            stroke={accentColor1}
+            stroke={color(button)}
             curve={curveMonotoneX}
-          />
+            />
+          ))}
         </Group>
       </svg>
     </div>
