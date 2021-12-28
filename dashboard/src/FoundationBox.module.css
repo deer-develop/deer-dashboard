@@ -1,0 +1,15 @@
+.outerBox {
+  position: relative;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 30px;
+}
+
+.innerBox {
+  position: relative;
+  box-sizing: border-box;
+  margin: 15px;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+}
