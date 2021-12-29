@@ -199,7 +199,7 @@ async function getUserProportionHistory(type) {
         SELECT reference_date, denominator, numerator, intersection
         FROM USER_PROPORTION_TB
         WHERE type_name = ?
-        AND reference_date BETWEEN CURDATE() - INTERVAL 6 MONTH AND CURDATE() - INTERVAL 1 DAY
+        AND reference_date BETWEEN CURDATE() - INTERVAL 3 MONTH AND CURDATE() - INTERVAL 1 DAY
     `
 
 	const userProportionHistory = await dashboard.selectPlural(userProportionHistoryQuery, [type])
@@ -238,9 +238,9 @@ async function getLastDailyActiveCoreUser() {
 
 async function getDailyActiveCoreUserHistory() {
 	const dailyActiveCoreUserHistoryQuery = `
-        SELECT value
+        SELECT reference_date, value
         FROM CORE_USER_ACTIVITY_RATE_TB
-        WHERE reference_date BETWEEN CURDATE() - INTERVAL 6 MONTH AND CURDATE() - INTERVAL 1 DAY
+        WHERE reference_date BETWEEN CURDATE() - INTERVAL 3 MONTH AND CURDATE() - INTERVAL 1 DAY
         AND reference_hour = 23 AND reference_minute = 45
     `
 
@@ -366,11 +366,11 @@ async function getQueryResultHistory(comment, spanMonths) {
 
 //console.log 찍기
 async function print() {
-	const result = await getUserProportionIndicators('active')
+	const result = await getDailyActiveCoreUserHistory()
 	console.log(result)
 }
 
-// print()
+print()
 
 module.exports = {
 	getGoogleSheetValue,

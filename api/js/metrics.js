@@ -469,7 +469,7 @@ async function getUserProportionHistoryMetric(type) {
 	let userProportionHistory = await repo.getUserProportionHistory(type)
 
 	for (let i = 0; i < userProportionHistory.length; i++) {
-		userProportionHistory[i]['user_proportion'] = round((userProportionHistory[i]['numerator'] * 100) / userProportionHistory[i]['denominator'], 2)
+		userProportionHistory[i]['value'] = round((userProportionHistory[i]['numerator'] * 100) / userProportionHistory[i]['denominator'], 2)
 		;['denominator', 'numerator', 'intersection'].forEach(function (key) {
 			delete userProportionHistory[i][key]
 		})
@@ -508,7 +508,18 @@ async function getActiveUserActivityRateMetric() {
 }
 
 async function getCoreUserActivityRateHistoryMetric() {
-	const coreUserActivityRateHistory = await repo.getCoreUserActivityRateHistory()
+	const dailyActiveCoreUserHistory = await repo.getDailyActiveCoreUserHistory()
+	const totalUserHistory = await repo.getUserProportionHistory('core_all_12_weeks')
+	let coreUserActivityRateHistory = []
+
+	for (let i = 0; i < dailyActiveCoreUserHistory.length; i++) {
+		const mondayDate = moment(dailyActiveCoreUserHistory[i]['reference_date']).isoWeekday(1)
+		const totalUser = totalUserHistory.filter((el) => moment(el.reference_date).format('YY-MM-DD') === mondayDate.format('YY-MM-DD'))
+		coreUserActivityRateHistory.push({
+			reference_date: dailyActiveCoreUserHistory[i]['reference_date'],
+			value: round((dailyActiveCoreUserHistory[i]['value'] * 100) / totalUser[0]['numerator'], 1),
+		})
+	}
 
 	return coreUserActivityRateHistory
 }
@@ -524,7 +535,7 @@ async function getActiveUserActivityRateHistoryMetric() {
 	for (let i = 0; i < totalUserHistory.length; i++) {
 		activeUserActivityRateHistory.push({
 			reference_date: totalUserHistory[i]['reference_date'],
-			value: round((slicedDailyActiveUserHistory[i]['value'] * 100) / totalUserHistory[i]['denominator'], 2),
+			value: round((slicedDailyActiveUserHistory[i]['value'] * 100) / totalUserHistory[i]['denominator'], 1),
 		})
 	}
 
@@ -544,11 +555,9 @@ async function getCoreRetentionCohortMetric() {
 		const registeredDate = moment(coreRetentionCohort[i]['registered_date'])
 		const dateDiff = moment().isoWeekday(1).diff(registeredDate, 'days')
 
-		//TODO: dateDiff가 올림에서 내림으로 바뀐 부분 검토 필요 (하나 더 있음)
 		for (let j = 0; j < 9; j++) {
 			if (coreRetentionCohort[i]['week_number'] === j) {
 				let index = Math.floor((dateDiff + 1) / 7)
-				console.log(dateDiff, index, retentionCohortArray[index])
 				retentionCohortArray[index][j] += coreRetentionCohort[i]['retained_user']
 				if (j === 0) {
 					retentionCohortPoolSize[index] += coreRetentionCohort[i]['retained_user']
@@ -587,11 +596,11 @@ async function getCoreRetentionCohortMetric() {
 }
 
 async function print() {
-	const result = await getUseDissatisfactionDetailsMetric('total')
+	const result = await getCoreUserActivityRateHistoryMetric()
 	console.log(result)
 }
 
-// print()
+print()
 
 module.exports = {
 	getUserActivationMetric,
